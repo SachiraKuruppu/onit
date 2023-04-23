@@ -26,7 +26,12 @@ export const SearchBar = ({ onSubmit }: SearchBarProps): ReactElement => {
                         onChange={handleChange}
                     />
                 </div>
-                <button className="f4 grow no-underline br-pill ph4 ma3 dib black bg-lightest-blue" onClick={submitSearch}>Submit</button>
+                <button
+                  className="f4 grow no-underline br-pill ph4 ma3 dib black bg-lightest-blue"
+                  onClick={submitSearch}
+                >
+                  Submit
+                </button>
             </div>
         </section>
   );
