@@ -2,7 +2,7 @@ import React, { type ReactElement, useState } from "react";
 import "./App.css";
 import "reflect-metadata";
 import { type IConcepts, TYPES, container } from "./services";
-import { SearchBar } from "./components/search/search-bar";
+import { SearchBar } from "./components/search";
 import { FourSquare } from "react-loading-indicators";
 
 function App(): ReactElement {
