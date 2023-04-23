@@ -3,14 +3,13 @@ import { injectable, inject } from "tsyringe";
 import { Queue } from "queue-typescript";
 import { type IConcepts } from "./IConcepts";
 import { type IFetch } from "../fetch-wrapper/IFetch";
-import { TYPES } from "..";
 
 interface ConceptApiEdgeType { end: { label: string }}
 interface GraphType { [key: string]: GraphType }
 
 @injectable()
 export class ConceptNetApi implements IConcepts {
-  constructor(@inject(TYPES.IFetch) private readonly fetchWrapper: IFetch) {}
+  constructor(@inject(Symbol.for("IFetch")) private readonly fetchWrapper: IFetch) {}
 
   async getConcepts(term: string): Promise<string> {
     const conceptsMap = await this.fetchConceptsRecursively(term, 100);
