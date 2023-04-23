@@ -1,10 +1,13 @@
-import React, { type ReactElement } from "react";
+import React, { type ReactElement, useState } from "react";
 import "./App.css";
 import "reflect-metadata";
 import { type IConcepts, TYPES, container } from "./services";
 import { SearchBar } from "./components/search/search-bar";
+import { FourSquare } from "react-loading-indicators";
 
 function App(): ReactElement {
+  const [loading, setLoading] = useState(false);
+
   const writeResults = (results: string): void => {
     const resultsDiv = document.getElementById("results");
     if (resultsDiv !== null) {
@@ -14,9 +17,13 @@ function App(): ReactElement {
 
   const onSearchSubmit = (term: string): void => {
     const concepts = container.resolve<IConcepts>(TYPES.IConcept);
+
+    writeResults("");
+    setLoading(true);
     concepts.getConcepts(term)
       .then(jsonString => { writeResults(jsonString); })
-      .catch((error: Error) => { writeResults(error.message); });
+      .catch((error: Error) => { writeResults(error.message); })
+      .finally(() => { setLoading(false); });
   };
 
   return (
@@ -27,9 +34,11 @@ function App(): ReactElement {
       <SearchBar onSubmit={onSearchSubmit}/>
       <div
         className="tl navy georgia ma5 pa3 ba b--dashed"
-        id="results"
         style={{ whiteSpace: "pre-wrap" }}
-      />
+      >
+        <p id="results" />
+        {loading && <FourSquare color="lightblue" />}
+      </div>
     </div>
   );
 }
