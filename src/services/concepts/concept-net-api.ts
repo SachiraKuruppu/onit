@@ -1,12 +1,16 @@
-import { injectable } from "tsyringe";
+import "reflect-metadata";
+import { injectable, inject } from "tsyringe";
 import { Queue } from "queue-typescript";
 import { type IConcepts } from "./IConcepts";
+import { type IFetch } from "../fetch-wrapper/IFetch";
 
 interface ConceptApiEdgeType { end: { label: string }}
 interface GraphType { [key: string]: GraphType }
 
 @injectable()
 export class ConceptNetApi implements IConcepts {
+  constructor(@inject(Symbol.for("IFetch")) private readonly fetchWrapper: IFetch) {}
+
   async getConcepts(term: string): Promise<string> {
     const conceptsMap = await this.fetchConceptsRecursively(term, 100);
     const hierarchicalJson = await this.generateHierarchicalJson(conceptsMap, term);
@@ -18,7 +22,7 @@ export class ConceptNetApi implements IConcepts {
     return term.split(" ").join("_");
   }
 
-  private async fetchConceptsRecursively(term: string, limit: number): Promise<Map<string, string[]>> {
+  protected async fetchConceptsRecursively(term: string, limit: number): Promise<Map<string, string[]>> {
     let currentLimit = limit;
     const conceptsMap = new Map<string, string[]>();
     const q = new Queue<{ level: number, term: string }>();
@@ -40,7 +44,7 @@ export class ConceptNetApi implements IConcepts {
     return conceptsMap;
   }
 
-  private async generateHierarchicalJson(conceptsMap: Map<string, string[]>, term: string): Promise<string> {
+  protected async generateHierarchicalJson(conceptsMap: Map<string, string[]>, term: string): Promise<string> {
     const nodeList: GraphType = {};
 
     conceptsMap.forEach((values, key) => {
@@ -53,10 +57,10 @@ export class ConceptNetApi implements IConcepts {
       });
     });
 
-    return JSON.stringify(nodeList[term], null, 4);
+    return JSON.stringify({ [term]: nodeList[term] }, null, 4);
   }
 
-  private async fetchConcepts(term: string, limit: number): Promise<string[]> {
+  protected async fetchConcepts(term: string, limit: number): Promise<string[]> {
     // prepare url to fetch search results
     const baseAddress = "https://api.conceptnet.io";
     const preparedQuery = `/c/en/${this.escapeTerm(term)}`;
@@ -64,7 +68,7 @@ export class ConceptNetApi implements IConcepts {
     const encodedLimit = encodeURIComponent(limit);
     const preparedUrl = `${baseAddress}/query?start=${encodedQuery}&rel=/r/IsA&limit=${encodedLimit}`;
 
-    const response = await fetch(preparedUrl);
+    const response = await this.fetchWrapper.fetch(preparedUrl);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
