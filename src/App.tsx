@@ -10,6 +10,10 @@ function App(): ReactElement {
         <h2 className="f2">Find English Language Parent Concepts</h2>
       </div>
       <SearchBar onSubmit={searchTerm => { console.log(searchTerm); }}/>
+      <div
+        className="tl navy georgia ma5 pa3 grow ba b--dashed"
+        id="results"
+      />
     </div>
   );
 }
