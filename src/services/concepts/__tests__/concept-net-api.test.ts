@@ -15,7 +15,11 @@ class MockConceptNetApi extends ConceptNetApi {
 }
 
 test("should be able to generate a hierarchical json given a concept map", async () => {
-  const mockApi = new MockConceptNetApi();
+  const mockApi = new MockConceptNetApi({
+    fetch: async (url: string) => {
+      return new Response();
+    }
+  });
 
   const conceptMap = new Map<string, string[]>([
     ["a", ["b", "c"]],
@@ -38,7 +42,11 @@ test("should be able to generate a hierarchical json given a concept map", async
 });
 
 test("should be able to fetch recursively and construct the concepts map", async () => {
-  const mockApi = new MockConceptNetApi();
+  const mockApi = new MockConceptNetApi({
+    fetch: async (url: string) => {
+      return new Response();
+    }
+  });
 
   const conceptMap = await mockApi.callFetchConceptsRecursively("z", 100);
 
@@ -48,4 +56,29 @@ test("should be able to fetch recursively and construct the concepts map", async
   expect(conceptMap.get("a")).toStrictEqual(["b", "c"]);
   expect(conceptMap.get("b")).toStrictEqual(["a", "c"]);
   expect(conceptMap.get("c")).toStrictEqual(["a", "b"]);
+});
+
+test("should call the concept api endpoint", async () => {
+  class MockConceptNetApiFetchTest extends ConceptNetApi {
+    async callFetchConcepts(term: string, limit: number): Promise<string[]> {
+      return await this.fetchConcepts(term, limit);
+    }
+  }
+
+  const mockFetchFunction = jest.fn();
+
+  const mockApi = new MockConceptNetApiFetchTest({
+    fetch: async (url: string) => {
+      mockFetchFunction(url as any);
+      return new Response(`{
+        "edges": []
+      }`);
+    }
+  });
+
+  const expectedUrl = `https://api.conceptnet.io/query?start=${encodeURIComponent(`/c/en/supreme_court`)}&rel=/r/IsA&limit=100`;
+
+  await mockApi.callFetchConcepts("supreme court", 100);
+
+  expect(mockFetchFunction).toHaveBeenCalledWith(expectedUrl);
 });

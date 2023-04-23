@@ -1,13 +1,17 @@
 import "reflect-metadata";
-import { injectable } from "tsyringe";
+import { injectable, inject } from "tsyringe";
 import { Queue } from "queue-typescript";
 import { type IConcepts } from "./IConcepts";
+import { type IFetch } from "../fetch-wrapper/IFetch";
+import { TYPES } from "..";
 
 interface ConceptApiEdgeType { end: { label: string }}
 interface GraphType { [key: string]: GraphType }
 
 @injectable()
 export class ConceptNetApi implements IConcepts {
+  constructor(@inject(TYPES.IFetch) private readonly fetchWrapper: IFetch) {}
+
   async getConcepts(term: string): Promise<string> {
     const conceptsMap = await this.fetchConceptsRecursively(term, 100);
     const hierarchicalJson = await this.generateHierarchicalJson(conceptsMap, term);
@@ -65,7 +69,7 @@ export class ConceptNetApi implements IConcepts {
     const encodedLimit = encodeURIComponent(limit);
     const preparedUrl = `${baseAddress}/query?start=${encodedQuery}&rel=/r/IsA&limit=${encodedLimit}`;
 
-    const response = await fetch(preparedUrl);
+    const response = await this.fetchWrapper.fetch(preparedUrl);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
