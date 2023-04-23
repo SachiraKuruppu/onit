@@ -1,23 +1,15 @@
 import React, { type ReactElement } from "react";
 import "./App.css";
 import "reflect-metadata";
+import { SearchBar } from "./components/search/search-bar";
 
 function App(): ReactElement {
   return (
     <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className='App-link'
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="navy georgia ma0 grow">
+        <h2 className="f2">Find English Language Parent Concepts</h2>
+      </div>
+      <SearchBar onSubmit={searchTerm => { console.log(searchTerm); }}/>
     </div>
   );
 }
