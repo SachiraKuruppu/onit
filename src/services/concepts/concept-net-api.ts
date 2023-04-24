@@ -9,6 +9,9 @@ interface GraphType { [key: string]: GraphType }
 
 @injectable()
 export class ConceptNetApi implements IConcepts {
+  private readonly minRequestTimeElapsedMs = 100;
+  private lastRequestTime: Date | undefined = undefined;
+
   constructor(@inject(Symbol.for("IFetch")) private readonly fetchWrapper: IFetch) {}
 
   async getConcepts(term: string, config: ConfigType = { limit: 100, maxLevel: 10 }): Promise<string> {
@@ -73,6 +76,7 @@ export class ConceptNetApi implements IConcepts {
     const encodedLimit = encodeURIComponent(limit);
     const preparedUrl = `${baseAddress}/query?start=${encodedQuery}&rel=/r/IsA&limit=${encodedLimit}`;
 
+    await this.throttle();
     const response = await this.fetchWrapper.fetch(preparedUrl);
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -82,5 +86,23 @@ export class ConceptNetApi implements IConcepts {
     const edges: ConceptApiEdgeType[] = data.edges;
 
     return edges.map(edge => edge.end.label);
+  }
+
+  private async throttle(): Promise<void> {
+    if (this.lastRequestTime === undefined) {
+      this.lastRequestTime = new Date();
+      return;
+    }
+
+    const timeElapsedMs = new Date().getTime() - this.lastRequestTime.getTime();
+    if (timeElapsedMs > this.minRequestTimeElapsedMs) {
+      this.lastRequestTime = new Date();
+      return;
+    }
+
+    // eslint-disable-next-line promise/param-names
+    await new Promise(res => setTimeout(res, this.minRequestTimeElapsedMs - timeElapsedMs));
+
+    this.lastRequestTime = new Date();
   }
 }
