@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Find English Language Parent Concepts
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This ReactJS single page application takes a search term as input and outputs a hierarchical JSON structure with all the term’s English language parent (IsA) concepts, utilising the ConceptNet API (github.com/commonsense/conceptnet5/wiki/API). Requests to the API are throttled 1 per 100ms.
 
 ## Available Scripts
 
@@ -29,18 +29,21 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+## Folder structure
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- `src/components`: React components used in the application
+- `src/services`: Services injected into the applications via a dependency injection container
+- `src/App.tsx`: main page of the application
+- `__tests__`: Tests for each component is available in `__tests__` subfolders within the folders of each component.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Libraries used
+- TSyringe is used as the dependency injection container. 
+    - This was chosen due to lightweight; it is developed by microsoft; and is actively maintained.
+    - Using a dependency injection container allows us to quickly switch between third-party services when required.
+    - It is also help avoid bad coding practices such as circular dependencies.
+- Eslint is used as the linter. This is the most popular linter for typescript.
+    - Having a linter makes it easier to debug and reduces development time.
+    - There are multiple ways you can write typescript. Eslint allows us to maintain consistency across the codebase (e.g. use of single quotes vs double quotes, use of explicit return types).
+- Tachyon was used as the CSS library.
+    - It is fast and light weight, and also easy to learn.
+- Jest and React testing library are used for testing. These libraries are by default installed when creating a React application.
