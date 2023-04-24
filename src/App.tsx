@@ -15,12 +15,12 @@ function App(): ReactElement {
     }
   };
 
-  const onSearchSubmit = (term: string): void => {
+  const onSearchSubmit = (term: string, limit: number, maxLevel: number): void => {
     const concepts = container.resolve<IConcepts>(TYPES.IConcept);
 
     writeResults("");
     setLoading(true);
-    concepts.getConcepts(term)
+    concepts.getConcepts(term, { limit, maxLevel })
       .then(jsonString => { writeResults(jsonString); })
       .catch((error: Error) => { writeResults(error.message); })
       .finally(() => { setLoading(false); });
