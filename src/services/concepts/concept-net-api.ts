@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
 import { Queue } from "queue-typescript";
-import { type IConcepts } from "./IConcepts";
+import { type ConfigType, type IConcepts } from "./IConcepts";
 import { type IFetch } from "../fetch-wrapper/IFetch";
 
 interface ConceptApiEdgeType { end: { label: string }}
@@ -11,8 +11,8 @@ interface GraphType { [key: string]: GraphType }
 export class ConceptNetApi implements IConcepts {
   constructor(@inject(Symbol.for("IFetch")) private readonly fetchWrapper: IFetch) {}
 
-  async getConcepts(term: string): Promise<string> {
-    const conceptsMap = await this.fetchConceptsRecursively(term, 100);
+  async getConcepts(term: string, config: ConfigType = { limit: 100, maxLevel: 10 }): Promise<string> {
+    const conceptsMap = await this.fetchConceptsRecursively(term, config.limit, config.maxLevel);
     const hierarchicalJson = await this.generateHierarchicalJson(conceptsMap, term);
 
     return hierarchicalJson;
@@ -22,7 +22,7 @@ export class ConceptNetApi implements IConcepts {
     return term.split(" ").join("_");
   }
 
-  protected async fetchConceptsRecursively(term: string, limit: number): Promise<Map<string, string[]>> {
+  protected async fetchConceptsRecursively(term: string, limit: number, maxLevel: number): Promise<Map<string, string[]>> {
     let currentLimit = limit;
     const conceptsMap = new Map<string, string[]>();
     const q = new Queue<{ level: number, term: string }>();
@@ -31,12 +31,17 @@ export class ConceptNetApi implements IConcepts {
     while (q.length > 0) {
       const { level, term: newTerm } = q.dequeue();
       console.log(`level: '${level}', term: '${newTerm}'`);
+
       if (!conceptsMap.has(newTerm)) {
         const concepts = await this.fetchConcepts(newTerm, currentLimit);
         const filteredConcepts = concepts.filter(concept => concept !== newTerm);
         conceptsMap.set(newTerm, filteredConcepts);
 
-        filteredConcepts.forEach(concept => { q.enqueue({ level: level + 1, term: concept }); });
+        filteredConcepts.forEach(concept => {
+          if (level + 1 < maxLevel) {
+            q.enqueue({ level: level + 1, term: concept });
+          }
+        });
         currentLimit -= filteredConcepts.length;
       }
     }

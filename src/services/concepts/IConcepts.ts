@@ -1,6 +1,9 @@
 
-export interface ConceptOutputType { [key: string]: ConceptOutputType }
+export interface ConfigType {
+  limit: number
+  maxLevel: number
+}
 
 export interface IConcepts {
-  getConcepts: (term: string) => Promise<string>
+  getConcepts: (term: string, config: ConfigType) => Promise<string>
 }

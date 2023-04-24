@@ -5,8 +5,8 @@ class MockConceptNetApi extends ConceptNetApi {
     return await this.generateHierarchicalJson(conceptsMap, term);
   }
 
-  async callFetchConceptsRecursively(term: string, limit: number): Promise<Map<string, string[]>> {
-    return await this.fetchConceptsRecursively(term, limit);
+  async callFetchConceptsRecursively(term: string, limit: number, maxLevel: number): Promise<Map<string, string[]>> {
+    return await this.fetchConceptsRecursively(term, limit, maxLevel);
   }
 
   async fetchConcepts(term: string, limit: number): Promise<string[]> {
@@ -48,7 +48,7 @@ test("should be able to fetch recursively and construct the concepts map", async
     }
   });
 
-  const conceptMap = await mockApi.callFetchConceptsRecursively("z", 100);
+  const conceptMap = await mockApi.callFetchConceptsRecursively("z", 100, 10);
 
   // With the current logic, it is still possible to have circular connections (e.g. a -> b -> a). I assume ConceptAPI won't do this.
   expect(conceptMap.size).toBe(4);
@@ -81,4 +81,17 @@ test("should call the concept api endpoint", async () => {
   await mockApi.callFetchConcepts("supreme court", 100);
 
   expect(mockFetchFunction).toHaveBeenCalledWith(expectedUrl);
+});
+
+test("should be able to limit the hierarchy depth", async () => {
+  const mockApi = new MockConceptNetApi({
+    fetch: async (url: string) => {
+      return new Response();
+    }
+  });
+
+  const conceptMap = await mockApi.callFetchConceptsRecursively("z", 100, 1);
+
+  expect(conceptMap.size).toBe(1);
+  expect(conceptMap.get("z")).toStrictEqual(["a", "b", "c"]);
 });

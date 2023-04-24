@@ -1,18 +1,20 @@
 import React, { type ChangeEvent, useState, type ReactElement } from "react";
 
 interface SearchBarProps {
-  onSubmit: (searchTerm: string) => void
+  onSubmit: (searchTerm: string, limit: number, maxLevels: number) => void
 }
 
 export const SearchBar = ({ onSubmit }: SearchBarProps): ReactElement => {
   const [searchField, setSearchField] = useState("");
+  const [limit, setLimit] = useState(100);
+  const [maxLevel, setMaxLevel] = useState(10);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setSearchField(e.target.value);
   };
 
   const submitSearch = (): void => {
-    onSubmit(searchField);
+    onSubmit(searchField, limit, maxLevel);
   };
 
   return (
@@ -32,6 +34,24 @@ export const SearchBar = ({ onSubmit }: SearchBarProps): ReactElement => {
                 >
                   Submit
                 </button>
+            </div>
+            <div className="flex justify-center">
+              <p className="pr3">Limit:</p>
+              <input
+                className="pr3"
+                type="text"
+                id="limit"
+                value={limit}
+                onChange={(e) => { setLimit(+e.target.value); }}
+              />
+              <p className="pr3 pl3">Max Levels:</p>
+              <input
+                className="pr3"
+                type="text"
+                id="maxLevels"
+                value={maxLevel}
+                onChange={(e) => { setMaxLevel(+e.target.value); }}
+              />
             </div>
         </section>
   );
